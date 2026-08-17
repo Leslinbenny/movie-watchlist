@@ -4,10 +4,12 @@
  */
 
 // API Configuration
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://127.0.0.1:8000/api/'
-  : 'https://watchlist-backend-api.onrender.com/api/'; // Online endpoint or fallback
-
+const API_BASE =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000/api/'
+    : 'https://movie-watchlist-zgru.onrender.com/api/';
+  
 // Pre-seeded Demo Data for instantaneous college review & testing
 const DEMO_SEEDED_MEDIA = [
   {
