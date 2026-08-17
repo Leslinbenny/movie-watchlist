@@ -7,27 +7,26 @@ class Media(models.Model):
         ('Movie', 'Movie'),
         ('TV', 'TV'),
     ]
+    TYPE_CHOICES = MEDIA_TYPES
 
     STATUS_CHOICES = [
         ('Watched', 'Watched'),
         ('Unwatched', 'Unwatched'),
     ]
 
-    title = models.CharField(max_length=200)
-    type = models.CharField(max_length=10, choices=MEDIA_TYPES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    rating = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        choices=[
-            (1, '1'),
-            (2, '2'),
-            (3, '3'),
-            (4, '4'),
-            (5, '5'),
-        ]
-    )
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    type = models.CharField(max_length=10, choices=MEDIA_TYPES, default='Movie')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Unwatched')
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    poster_url = models.CharField(max_length=1000, null=True, blank=True)
+    year = models.PositiveIntegerField(null=True, blank=True)
+    genre = models.CharField(max_length=100, null=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='media_items')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.type}) - {self.owner.username}"

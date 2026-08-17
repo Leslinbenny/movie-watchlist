@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="My Movie Watchlist — Track and rate films and TV shows with private server authentication.">
+  <title>My Movie Watchlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="navbar-container">
+        <div class="brand">
+          <div class="brand-icon-wrapper">
+            <i data-lucide="film"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">My Movie Watchlist</span>
+            <span class="brand-subtitle">Personal Film & TV Archive</span>
+          </div>
+        </div>
+
+        <div class="navbar-actions">
+          <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+            <i data-lucide="sun" id="theme-icon"></i>
+          </button>
+
+          <button type="button" id="open-add-btn" class="btn btn-primary auth-required">
+            <i data-lucide="plus"></i>
+            <span>Add Title</span>
+          </button>
+
+          <div id="auth-nav-section" class="user-profile">
+            <!-- Dynamically rendered via script.js (User info or Sign In button) -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="container">
+        
+        <!-- Auth Banner / Sign-in required prompt if not logged in -->
+        <div id="unauth-hero" class="unauth-hero">
+          <div class="unauth-card">
+            <div class="unauth-badge">
+              <i data-lucide="clapperboard"></i>
+            </div>
+            <h2>Welcome to My Movie Watchlist</h2>
+            <p>Keep track of every film and TV series you want to see, rate your favorites, and explore movie artwork.</p>
+            <div class="unauth-actions">
+              <button type="button" id="hero-login-btn" class="btn btn-primary">Sign In to Your Watchlist</button>
+              <button type="button" id="hero-demo-btn" class="btn btn-secondary">1-Click Demo Login</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Authenticated Dashboard View -->
+        <div id="auth-dashboard" class="auth-dashboard" style="display: none;">
+          <!-- Quick Stats Bar -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-box stat-blue"><i data-lucide="library"></i></div>
+              <div class="stat-info">
+                <span id="stat-total" class="stat-value">0</span>
+                <span class="stat-label">Total Titles</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-box stat-purple"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <span id="stat-towatch" class="stat-value">0</span>
+                <span class="stat-label">To Watch</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-box stat-green"><i data-lucide="check-circle-2"></i></div>
+              <div class="stat-info">
+                <span id="stat-watched" class="stat-value">0</span>
+                <span class="stat-label">Watched</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-box stat-gold"><i data-lucide="star"></i></div>
+              <div class="stat-info">
+                <span id="stat-rating" class="stat-value">—</span>
+                <span class="stat-label">Avg Rating</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Header: Tabs + Search + Filters -->
+          <div class="dashboard-controls-panel">
+            <div class="tab-navigation">
+              <button type="button" class="tab-btn active" data-tab="Unwatched">
+                <i data-lucide="clock"></i>
+                <span>To Watch</span>
+                <span id="badge-towatch" class="tab-badge">0</span>
+              </button>
+              <button type="button" class="tab-btn" data-tab="Watched">
+                <i data-lucide="check-circle-2"></i>
+                <span>Watched</span>
+                <span id="badge-watched" class="tab-badge">0</span>
+              </button>
+            </div>
+
+            <div class="toolbar">
+              <div class="search-box">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="filter-search-input" placeholder="Search your titles..." />
+              </div>
+
+              <div class="toolbar-right">
+                <div class="filter-type-group">
+                  <button type="button" class="type-filter-btn active" data-type="ALL">All</button>
+                  <button type="button" class="type-filter-btn" data-type="Movie">Films</button>
+                  <button type="button" class="type-filter-btn" data-type="TV">TV Shows</button>
+                </div>
+
+                <div class="sort-box">
+                  <i data-lucide="sliders-horizontal"></i>
+                  <select id="sort-select">
+                    <option value="newest">Recently Added</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="title">Title (A-Z)</option>
+                    <option value="year">Year</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading Indicator -->
+          <div id="media-loading" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading your watchlist...</p>
+          </div>
+
+          <!-- Media Cards Grid -->
+          <div id="media-grid" class="media-grid"></div>
+
+          <!-- Empty State -->
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-icon-wrapper">
+              <i data-lucide="film"></i>
+            </div>
+            <h3 id="empty-title" class="empty-title">Your watchlist is empty</h3>
+            <p id="empty-desc" class="empty-description">Add films and TV shows you want to watch to keep track of them here.</p>
+            <button type="button" id="empty-add-btn" class="btn btn-primary">
+              <i data-lucide="plus"></i>
+              <span>Add your first title</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Auth Modal (Login & Register) -->
+    <div id="auth-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card auth-modal-card">
+        <div class="modal-header">
+          <div class="auth-tabs">
+            <button type="button" id="tab-login" class="auth-tab-btn active">Sign In</button>
+            <button type="button" id="tab-register" class="auth-tab-btn">Create Account</button>
+          </div>
+          <button type="button" class="btn-close-modal" aria-label="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div id="auth-error" class="alert-error" style="display: none;"></div>
+
+          <!-- Login Form -->
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-username" class="form-label">Username</label>
+              <div class="input-icon-wrap">
+                <i data-lucide="user"></i>
+                <input type="text" id="login-username" class="form-input" placeholder="Enter username" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="login-password" class="form-label">Password</label>
+              <div class="input-icon-wrap">
+                <i data-lucide="lock"></i>
+                <input type="password" id="login-password" class="form-input" placeholder="Enter password" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <button type="button" id="btn-quick-demo" class="btn btn-secondary btn-block" style="margin-top: 0.5rem;">
+              <i data-lucide="sparkles"></i>
+              <span>Quick Demo Sign In (demo / password123)</span>
+            </button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="register-form" style="display: none;">
+            <div class="form-group">
+              <label for="reg-username" class="form-label">Username</label>
+              <div class="input-icon-wrap">
+                <i data-lucide="user"></i>
+                <input type="text" id="reg-username" class="form-input" placeholder="Choose username" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reg-email" class="form-label">Email (Optional)</label>
+              <div class="input-icon-wrap">
+                <i data-lucide="mail"></i>
+                <input type="email" id="reg-email" class="form-input" placeholder="name@example.com" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reg-password" class="form-label">Password</label>
+              <div class="input-icon-wrap">
+                <i data-lucide="lock"></i>
+                <input type="password" id="reg-password" class="form-input" placeholder="Minimum 6 characters" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Media Modal -->
+    <div id="add-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card add-media-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <i data-lucide="film"></i>
+            <h2>Add to Watchlist</h2>
+          </div>
+          <button type="button" class="btn-close-modal" aria-label="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <form id="add-media-form" class="modal-body">
+          <div id="add-error" class="alert-error" style="display: none;"></div>
+
+          <!-- Live Title Search -->
+          <div class="search-section-box">
+            <label for="add-title-input" class="form-label">
+              <span>Search Movie or TV Show</span>
+              <span id="search-status" class="search-status-text" style="display: none;">
+                <span class="mini-spin"></span> Searching posters...
+              </span>
+            </label>
+            <div class="search-input-wrap">
+              <i data-lucide="search" class="search-field-icon"></i>
+              <input type="text" id="add-title-input" class="form-input search-hero-input" placeholder="Type title (e.g. Inception, Breaking Bad, Dune, Avatar...)" required />
+            </div>
+
+            <!-- Live Poster Results Gallery -->
+            <div id="poster-results-gallery" class="poster-gallery" style="display: none;">
+              <div class="poster-gallery-header">
+                <span>Click any artwork to autofill:</span>
+                <span id="poster-count-badge" class="count-pill">0 available</span>
+              </div>
+              <div id="poster-gallery-grid" class="poster-gallery-grid"></div>
+            </div>
+          </div>
+
+          <!-- Form Details Grid -->
+          <div class="modal-two-columns">
+            <!-- Poster Preview Box -->
+            <div class="poster-preview-col">
+              <label class="form-label">Poster</label>
+              <div id="poster-preview-wrap" class="poster-preview-wrap">
+                <div id="poster-preview-empty" class="poster-preview-placeholder">
+                  <i data-lucide="image"></i>
+                  <span>No Poster</span>
+                </div>
+                <img id="poster-preview-img" class="poster-preview-img" style="display: none;" alt="Poster preview" />
+              </div>
+            </div>
+
+            <!-- Fields -->
+            <div class="fields-col">
+              <!-- Type Toggle -->
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                <div class="segmented-control">
+                  <button type="button" class="segment-btn active" data-value="Movie">Film</button>
+                  <button type="button" class="segment-btn" data-value="TV">TV Show</button>
+                </div>
+              </div>
+
+              <!-- Status Toggle -->
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <div class="segmented-control">
+                  <button type="button" class="segment-btn active" data-value="Unwatched">To Watch</button>
+                  <button type="button" class="segment-btn" data-value="Watched">Watched</button>
+                </div>
+              </div>
+
+              <!-- Rating (If Watched) -->
+              <div id="rating-form-group" class="form-group" style="display: none;">
+                <label class="form-label">
+                  <span>Rating</span>
+                  <span id="rating-score-display" class="rating-pill">5 / 5</span>
+                </label>
+                <div id="modal-star-picker" class="modal-star-picker">
+                  <!-- Stars injected via JS -->
+                </div>
+              </div>
+
+              <!-- Year & Genre -->
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="add-year-input" class="form-label">Year</label>
+                  <input type="number" id="add-year-input" class="form-input" placeholder="e.g. 2024" min="1888" max="2099" />
+                </div>
+                <div class="form-group">
+                  <label for="add-genre-input" class="form-label">Genre</label>
+                  <input type="text" id="add-genre-input" class="form-input" placeholder="e.g. Sci-Fi" />
+                </div>
+              </div>
+
+              <!-- Custom Poster URL -->
+              <div class="form-group">
+                <label for="add-poster-url" class="form-label">Poster URL (Optional)</label>
+                <input type="url" id="add-poster-url" class="form-input" placeholder="https://..." />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost btn-close-modal">Cancel</button>
+            <button type="submit" id="btn-save-media" class="btn btn-primary">Add to Watchlist</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;">
+      <i data-lucide="check"></i>
+      <span id="toast-text">Success</span>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
