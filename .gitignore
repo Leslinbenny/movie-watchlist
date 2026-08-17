@@ -1,0 +1,32 @@
+# Python & Virtual Environments
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database & Sensitive
+*.sqlite3
+*.sqlite3-journal
+.env
+.env.local
+
+# OS & Temp
+.DS_Store
+Thumbs.db
+movie-watchlist/
